@@ -62,7 +62,7 @@ public class Main {
             String fileNameTitle = in.nextLine();
 
             try {
-                nbd.downloadAllChaptersHTMLver2(driver, saveDir, fileNameLink, fileNameTitle);
+                nbd.downloadAllChaptersHTMLver2(saveDir, fileNameLink, fileNameTitle);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

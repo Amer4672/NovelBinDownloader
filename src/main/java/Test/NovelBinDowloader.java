@@ -102,7 +102,7 @@ public class NovelBinDowloader {
         }
     }*/
 
-    public void downloadAllChaptersHTMLver2(WebDriver driver, String path, String fileNameLink, String fileNameTitle) throws InterruptedException {
+    public void downloadAllChaptersHTMLver2(String path, String fileNameLink, String fileNameTitle) throws InterruptedException {
         List<String> chapLinks = new ArrayList<>();
         List<String> chapTitle = new ArrayList<>();
 
@@ -127,10 +127,13 @@ public class NovelBinDowloader {
         }
 
         for (int i = 2; i < 4; i++) { //chapLinks.size()
+
+            WebDriver resetDriver = chromeDriverSetup();
             Thread.sleep(10000);
-            driver.get(chapLinks.get(i));
+            resetDriver.get(chapLinks.get(i));
+
             // Collect all <p> text
-            List<WebElement> paragraphs = driver.findElements(By.tagName("p"));
+            List<WebElement> paragraphs = resetDriver.findElements(By.tagName("p"));
 
             // Save to file
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(path + chapTitle.get(i) + " (HTML).txt"))) {
@@ -144,6 +147,7 @@ public class NovelBinDowloader {
                     }
                 }
                 System.out.println("✅ " + chapTitle.get(i) + " saved.");
+                resetDriver.quit();
             } catch (IOException e) {
                 e.printStackTrace();
             }
