@@ -5,8 +5,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.*;
@@ -16,32 +14,41 @@ import java.util.List;
 import java.util.Random;
 
 public class NovelBinDowloader {
+    WebDriver driver;
 
+    public NovelBinDowloader() {
+        System.setProperty("webdriver.chrome.driver", "C:\\Browser driver\\chromedriver.exe");
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)" +
+                " Chrome/135.0.0.0 Safari/537.36 OPR/120.0.0.0");
+
+        driver = new ChromeDriver();
+    }
     //webdriver stuff///////////////////////////////////////////////////////////////////////////////////////
 
-    public WebDriver chromeDriverSetup() {
+  /*  public WebDriver chromeDriverSetup() {
         System.setProperty("webdriver.chrome.driver", "C:\\Browser driver\\chromedriver.exe");
         ChromeOptions options = new ChromeOptions();
         options.addArguments("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)" +
                 " Chrome/135.0.0.0 Safari/537.36 OPR/120.0.0.0");
 
         WebDriver driver = new ChromeDriver();
-        return driver;
-    }
+        //return driver;
+    }*/
 
-    public WebDriverWait waitDriver(WebDriver driver) { /*WebDriverWait*/
+    public WebDriverWait waitDriver() { /*WebDriverWait*/
         Random rand = new Random();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(rand.nextInt(10) + 10));
         return wait;//return wait so that i can do expected conditions
     }
 
-    public void webAccessor(String url, WebDriver driver) {
+    public void webAccessor(String url) {
         driver.get(url);
         driver.manage().window().maximize();
-        waitDriver(driver);
+        waitDriver();
     }
 
-    public void webCloser(WebDriver driver) {
+    public void webCloser() {
         driver.quit();
     }
 
@@ -102,7 +109,7 @@ public class NovelBinDowloader {
         }
     }*/
 
-    public void downloadAllChaptersHTMLver2(WebDriver driver, String path, String fileNameLink, String fileNameTitle) throws InterruptedException {
+    public void downloadAllChaptersHTMLver2(String path, String fileNameLink, String fileNameTitle) throws InterruptedException {
         List<String> chapLinks = new ArrayList<>();
         List<String> chapTitle = new ArrayList<>();
 
@@ -144,6 +151,7 @@ public class NovelBinDowloader {
                     }
                 }
                 System.out.println("✅ " + chapTitle.get(i) + " saved.");
+                webCloser();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -153,7 +161,7 @@ public class NovelBinDowloader {
     public void downloadIndivChapterHTML(WebDriver driver, String url) {
         driver.get(url);
         driver.manage().window().maximize();
-        waitDriver(driver);
+        waitDriver();
         int chapNum = 1;
         // Collect all <p> text
         List<WebElement> paragraphs = driver.findElements(By.tagName("p"));
@@ -176,12 +184,12 @@ public class NovelBinDowloader {
 
     }
 
-    public void allLinksToTxt(WebDriver driver, String fileName) throws InterruptedException {
+    public void allLinksToTxt(String fileName) throws InterruptedException {
         //Find all chapter links
         Thread.sleep(10000);
         //waitDriver(driver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
         List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='/chapter-']"));
-        waitDriver(driver);
+        waitDriver();
 
         List<String> chapterLinks = new ArrayList<>();
 
@@ -205,12 +213,12 @@ public class NovelBinDowloader {
         }
     }
 
-    public void titleDownloader(WebDriver driver, String fileName) throws InterruptedException {
+    public void titleDownloader(String fileName) throws InterruptedException {
         //Find all chapter links
         Thread.sleep(10000);
         //waitDriver(driver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
         List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='/chapter-']"));
-        waitDriver(driver);
+        waitDriver();
 
         List<String> chapterTitle = new ArrayList<>();
 
