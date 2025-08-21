@@ -12,7 +12,6 @@ public class Main {
         String userHome = System.getProperty("user.home");
 
         NovelBinDowloader nbd = new NovelBinDowloader();
-        WebDriver driver = nbd.chromeDriverSetup();
 
         System.out.println("1. Download all links\n2. Download all titles\n3. Download chapters");
         int options = in.nextInt();
@@ -24,14 +23,14 @@ public class Main {
             System.out.print("Enter link: ");
             String link = in.nextLine();
 
-            nbd.webAccessor(link, driver);
+            nbd.webAccessor(link);
 
             try {
-                nbd.allLinksToTxt(driver, fileName);
+                nbd.allLinksToTxt(fileName);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            nbd.webCloser(driver);
+            nbd.webCloser();
         }
 
         else if (options == 2) {
@@ -40,14 +39,14 @@ public class Main {
             System.out.print("Enter link: ");
             String link = in.nextLine();
 
-            nbd.webAccessor(link, driver);
+            nbd.webAccessor(link);
 
             try {
-                nbd.titleDownloader(driver, fileName);
+                nbd.titleDownloader(fileName);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            nbd.webCloser(driver);
+            nbd.webCloser();
 
         }
 
@@ -68,6 +67,6 @@ public class Main {
             }
         }
 
-        nbd.webCloser(driver);
+        nbd.webCloser();
     }
 }
