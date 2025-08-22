@@ -18,14 +18,24 @@ import java.util.Random;
 public class NovelBinDowloader {
 
     //webdriver stuff///////////////////////////////////////////////////////////////////////////////////////
+    String[] userAgents = {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 OPR/120.0.0.0",
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0",
+                            "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+                            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3.1 Safari/605.1.15",
+    "Mozilla/5.0 (Linux; Android 15; SM-S931B Build/AP3A.240905.015.A2; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/127.0.6533.103 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 15; SM-S931U Build/AP3A.240905.015.A2; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/132.0.6834.163 Mobile Safari/537.36",
+    "Mozila/5.0 (Linux; Android 14; SM-S928B/DS) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.230 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 13; SM-A515F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 14; Pixel 9 Pro Build/AD1A.240418.003; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0.6367.54 Mobile Safari/537.36"};
+    Random rand = new Random();
+
 
     public WebDriver chromeDriverSetup() {
         System.setProperty("webdriver.chrome.driver", "C:\\Browser driver\\chromedriver.exe");
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)" +
-                " Chrome/135.0.0.0 Safari/537.36 OPR/120.0.0.0");
+        options.addArguments("--user-agent=" + userAgents[rand.nextInt(userAgents.length)]);
 
-        WebDriver driver = new ChromeDriver();
+        WebDriver driver = new ChromeDriver(options);
         return driver;
     }
 
@@ -49,12 +59,12 @@ public class NovelBinDowloader {
 
     //download chapter methods///////////////////////////////////////////////////////////////////////////////////////////
 
-    public void downloadAllChaptersHTML(WebDriver driver, String path) throws InterruptedException {
+    public void downloadAllChaptersHTML(WebDriver driver, String path, int startAt) throws InterruptedException {
 
         //Find all chapter links
-        Thread.sleep(1000);
+        Thread.sleep(5000);
         //waitDriver(driver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
-        List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='/chapter-']"));
+        List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='chapter-']"));
         waitDriver(driver);
 
         List<String> chapterLinks = new ArrayList<>();
@@ -73,13 +83,15 @@ public class NovelBinDowloader {
 
         webCloser(driver);
 
-        for (int i = 2; i < 4; i++) { //int i = 2 to skip the read now and latest chapter //chapterLinks.size()
+        for (int i = 1 + startAt; i < chapterLinks.size(); i++) { //int i = 2 to skip the read now and latest chapter //chapterLinks.size()
 
             System.out.println(chapterTitle.get(i));
             System.out.println(chapterLinks.get(i));
 
             WebDriver resetDriver = chromeDriverSetup();
+            Thread.sleep(rand.nextInt(5000) + 3000);
             resetDriver.get(chapterLinks.get(i));
+           // driver.get(chapterLinks.get(i));
             waitDriver(resetDriver);
 
             // Collect all <p> text
@@ -186,7 +198,7 @@ public class NovelBinDowloader {
         //Find all chapter links
         Thread.sleep(10000);
         //waitDriver(driver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
-        List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='/chapter-']"));
+        List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='chapter-']"));
         waitDriver(driver);
 
         List<String> chapterLinks = new ArrayList<>();
@@ -215,7 +227,7 @@ public class NovelBinDowloader {
         //Find all chapter links
         Thread.sleep(10000);
         //waitDriver(driver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
-        List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='/chapter-']"));
+        List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='chapter-']"));
         waitDriver(driver);
 
         List<String> chapterTitle = new ArrayList<>();

@@ -76,8 +76,13 @@ public class Main {
 
             System.out.print("Enter link: ");
             String link = in.nextLine();
+            System.out.print("Start at chapter: ");
+            int startAt= in.nextInt();
+
+            nbd.webAccessor(link, driver);
+
             try {
-                nbd.downloadAllChaptersHTML(driver, saveDir);
+                nbd.downloadAllChaptersHTML(driver, saveDir, startAt);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
