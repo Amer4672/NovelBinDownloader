@@ -49,10 +49,10 @@ public class NovelBinDowloader {
 
     //download chapter methods///////////////////////////////////////////////////////////////////////////////////////////
 
-  /*  public void downloadAllChaptersHTML(WebDriver driver, String path) throws InterruptedException {
+    public void downloadAllChaptersHTML(WebDriver driver, String path) throws InterruptedException {
 
         //Find all chapter links
-        waitDriver(driver);
+        Thread.sleep(1000);
         //waitDriver(driver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
         List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='/chapter-']"));
         waitDriver(driver);
@@ -71,18 +71,19 @@ public class NovelBinDowloader {
             }
         }
 
-        waitDriver(driver);
+        webCloser(driver);
 
         for (int i = 2; i < 4; i++) { //int i = 2 to skip the read now and latest chapter //chapterLinks.size()
 
             System.out.println(chapterTitle.get(i));
             System.out.println(chapterLinks.get(i));
 
-            driver.get(chapterLinks.get(i));
-            waitDriver(driver);
+            WebDriver resetDriver = chromeDriverSetup();
+            resetDriver.get(chapterLinks.get(i));
+            waitDriver(resetDriver);
 
             // Collect all <p> text
-            List<WebElement> paragraphs = driver.findElements(By.tagName("p"));
+            List<WebElement> paragraphs = resetDriver.findElements(By.tagName("p"));
 
             // Save to file
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(path + chapterTitle.get(i) + " (HTML).txt"))) {
@@ -96,11 +97,12 @@ public class NovelBinDowloader {
                     }
                 }
                 System.out.println("✅ " +chapterTitle.get(i) + " saved.");
+                webCloser(resetDriver);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-    }*/
+    }
 
     public void downloadAllChaptersHTMLver2(String path, String fileNameLink, String fileNameTitle) throws InterruptedException {
         List<String> chapLinks = new ArrayList<>();

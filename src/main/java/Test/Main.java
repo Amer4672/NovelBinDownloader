@@ -12,8 +12,9 @@ public class Main {
         String userHome = System.getProperty("user.home");
 
         NovelBinDowloader nbd = new NovelBinDowloader();
+        WebDriver driver = nbd.chromeDriverSetup();
 
-        System.out.println("1. Download all links\n2. Download all titles\n3. Download chapters");
+        System.out.println("1. Download all links\n2. Download all titles\n3. Download chapters\n4. Download all chapters straight up");
         int options = in.nextInt();
         in.nextLine();
 
@@ -23,14 +24,14 @@ public class Main {
             System.out.print("Enter link: ");
             String link = in.nextLine();
 
-            nbd.webAccessor(link);
+            nbd.webAccessor(link, driver);
 
             try {
-                nbd.allLinksToTxt(fileName);
+                nbd.allLinksToTxt(driver, fileName);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            nbd.webCloser();
+            nbd.webCloser(driver);
         }
 
         else if (options == 2) {
@@ -39,14 +40,14 @@ public class Main {
             System.out.print("Enter link: ");
             String link = in.nextLine();
 
-            nbd.webAccessor(link);
+            nbd.webAccessor(link, driver);
 
             try {
-                nbd.titleDownloader(fileName);
+                nbd.titleDownloader(driver, fileName);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            nbd.webCloser();
+            nbd.webCloser(driver);
 
         }
 
@@ -67,6 +68,21 @@ public class Main {
             }
         }
 
-        nbd.webCloser();
+        else if (options == 4) {
+            System.out.print("Enter novel title: ");
+            String novelTitle = in.nextLine();
+            String saveDir = userHome + "\\Desktop\\downloaded novels\\" + novelTitle + "\\";
+            new File(saveDir).mkdirs();
+
+            System.out.print("Enter link: ");
+            String link = in.nextLine();
+            try {
+                nbd.downloadAllChaptersHTML(driver, saveDir);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        nbd.webCloser(driver);
     }
 }
