@@ -1,93 +1,56 @@
 package Test;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.io.File;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Scanner in = new Scanner(System.in);
+        System.setProperty("webdriver.chrome.mainDriver", "C:\\Browser mainDriver\\chromedriver.exe");
+        WebDriver driver = new ChromeDriver();
 
-        String userHome = System.getProperty("user.home");
+        driver.get("https://global.novelpia.com/viewer/302745");
+        Thread.sleep(10000);
+        long endTime = System.currentTimeMillis() + 15000; // max 15s to handle all popups
 
-        NovelBinDowloader nbd = new NovelBinDowloader();
-        WebDriver driver = nbd.chromeDriverSetup();
-
-        System.out.println("1. Download all links\n2. Download all titles\n3. Download chapters\n4. Download all chapters straight up");
-        int options = in.nextInt();
-        in.nextLine();
-
-        if (options == 1) {
-            System.out.print("Enter file name: ");
-            String fileName = in.nextLine();
-            System.out.print("Enter link: ");
-            String link = in.nextLine();
-
-            nbd.webAccessor(link, driver);
-
+        while (System.currentTimeMillis() < endTime) {
             try {
-                nbd.allLinksToTxt(driver, fileName);
+                // Find all close buttons currently visible
+                List<WebElement> closeButtons = driver.findElements(
+                        By.cssSelector("button > i.fi-rr-cross")
+                );
+
+                if (closeButtons.isEmpty()) {
+                    // no more popups, exit loop
+                    break;
+                }
+
+                // click all found buttons
+                for (WebElement btn : closeButtons) {
+                    try {
+                        btn.click();
+                        System.out.println("Closed one popup");
+                        Thread.sleep(300); // small delay to allow UI update
+                    } catch (Exception e) {
+                        // ignore in case popup disappeared too quickly
+                    }
+                }
+
             } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            nbd.webCloser(driver);
-        }
-
-        else if (options == 2) {
-            System.out.print("Enter file name: ");
-            String fileName = in.nextLine();
-            System.out.print("Enter link: ");
-            String link = in.nextLine();
-
-            nbd.webAccessor(link, driver);
-
-            try {
-                nbd.titleDownloader(driver, fileName);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            nbd.webCloser(driver);
-
-        }
-
-        else if (options == 3) {
-            System.out.print("Enter novel title: ");
-            String novelTitle = in.nextLine();
-            String saveDir = userHome + "\\Desktop\\downloaded novels\\" + novelTitle + "\\";
-            new File(saveDir).mkdirs();
-            System.out.print("Enter file name for chapter content link: ");
-            String fileNameLink = in.nextLine();
-            System.out.print("Enter file name for chapter title: ");
-            String fileNameTitle = in.nextLine();
-
-            try {
-                nbd.downloadAllChaptersHTMLver2(saveDir, fileNameLink, fileNameTitle);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                // ignore and continue
             }
         }
 
-        else if (options == 4) {
-            System.out.print("Enter novel title: ");
-            String novelTitle = in.nextLine();
-            String saveDir = userHome + "\\Desktop\\downloaded novels\\" + novelTitle + "\\";
-            new File(saveDir).mkdirs();
+        System.out.println("Done closing popups (or timeout reached).");
 
-            System.out.print("Enter link: ");
-            String link = in.nextLine();
-            System.out.print("Start at chapter: ");
-            int startAt= in.nextInt();
-
-            nbd.webAccessor(link, driver);
-
-            try {
-                nbd.downloadAllChaptersHTML(driver, saveDir, startAt);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        nbd.webCloser(driver);
+        WebElement body = driver.findElement(By.tagName("body"));
+        body.click();
+        driver.findElement(By.className("next")).click();
     }
 }

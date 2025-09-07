@@ -31,7 +31,7 @@ public class NovelBinDowloader {
 
 
     public WebDriver chromeDriverSetup() {
-        System.setProperty("webdriver.chrome.driver", "C:\\Browser driver\\chromedriver.exe");
+        System.setProperty("webdriver.chrome.mainDriver", "C:\\Browser mainDriver\\chromedriver.exe");
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--user-agent=" + userAgents[rand.nextInt(userAgents.length)]);
 
@@ -55,15 +55,13 @@ public class NovelBinDowloader {
         driver.quit();
     }
 
-
-
     //download chapter methods///////////////////////////////////////////////////////////////////////////////////////////
 
     public void downloadAllChaptersHTML(WebDriver driver, String path, int startAt) throws InterruptedException {
 
         //Find all chapter links
         Thread.sleep(5000);
-        //waitDriver(driver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
+        //waitDriver(mainDriver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
         List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='chapter-']"));
         waitDriver(driver);
 
@@ -91,7 +89,7 @@ public class NovelBinDowloader {
             WebDriver resetDriver = chromeDriverSetup();
             Thread.sleep(rand.nextInt(5000) + 3000);
             resetDriver.get(chapterLinks.get(i));
-           // driver.get(chapterLinks.get(i));
+           // mainDriver.get(chapterLinks.get(i));
             waitDriver(resetDriver);
 
             // Collect all <p> text
@@ -197,7 +195,7 @@ public class NovelBinDowloader {
     public void allLinksToTxt(WebDriver driver, String fileName) throws InterruptedException {
         //Find all chapter links
         Thread.sleep(10000);
-        //waitDriver(driver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
+        //waitDriver(mainDriver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
         List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='chapter-']"));
         waitDriver(driver);
 
@@ -226,7 +224,7 @@ public class NovelBinDowloader {
     public void titleDownloader(WebDriver driver, String fileName) throws InterruptedException {
         //Find all chapter links
         Thread.sleep(10000);
-        //waitDriver(driver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
+        //waitDriver(mainDriver).until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/chapter-']")));
         List<WebElement> chapterElements = driver.findElements(By.cssSelector("a[href*='chapter-']"));
         waitDriver(driver);
 

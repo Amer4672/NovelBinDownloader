@@ -16,6 +16,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class NovelBinDownloaderCleaned {
 
@@ -41,13 +44,7 @@ public class NovelBinDownloaderCleaned {
     public NovelBinDownloaderCleaned(String mainPageURL, int startAt) throws InterruptedException {
         mainDriver = chromeDriverSetup();
         webAccessor(mainDriver, mainPageURL);
-        Thread.sleep(3000);
-        String novelTitle = novelTitleGet(mainDriver);
-        if (novelTitle != null) {
-            chapterTitles.add(novelTitle);
-        } else {
-            System.out.println("No novel title found");
-        }
+        Thread.sleep(5000);
         String path = dirSetup(mainDriver);//setup file and returns path
         elementGatherer();
         chapLinksAndTitlesToList();
@@ -84,19 +81,62 @@ public class NovelBinDownloaderCleaned {
     }
 
     //constructor for testing purposes
-    public NovelBinDownloaderCleaned(String mainPageURL) throws InterruptedException {
+    public NovelBinDownloaderCleaned(String mainPageURL, int startAt, int filler) throws InterruptedException {
         mainDriver = chromeDriverSetup();
         webAccessor(mainDriver, mainPageURL);
-        Thread.sleep(3000);
-        String title = chapterTitleGet(mainDriver);
-        System.out.println("Title: " + title);
+        Thread.sleep(5000);
+        String path = dirSetup(mainDriver);//setup file and returns path
+        elementGatherer();
+        chapLinksAndTitlesToList();
+        webCloser(mainDriver);
+
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+        for (int i = 1 + startAt; i < chapterLinks.size(); i++) {
+            final int chapterIndex = i;
+            executor.submit(() -> {
+                try {
+                    downloadChapter(path, chapterIndex);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+        executor.shutdown();
+        executor.awaitTermination(1, TimeUnit.HOURS);
     }
 
+    public void downloadChapter(String path, int index) throws InterruptedException {
+        for (int j = 0; j < 12; j++) {
+            System.out.println();
+            WebDriver newDriver = chromeDriverSetup();
+            Thread.sleep(3000);
+            webAccessor(newDriver, chapterLinks.get(index));
+            Thread.sleep(2000);
+            try {
+                File file = saveChapterContent(newDriver, path, index);//return file name and downloads the file
+                webCloser(newDriver);
+                Thread.sleep(1000);
+                long size = file.length();
+                if (size > 2048) {
+                    break;
+                }
+            } catch (Exception e) {
+                webCloser(newDriver);
+                continue;
+            }
+            if ((j + 1) % 4 == 0) {
+                Thread.sleep(rand.nextInt(3000) + 5000);
+            }
+            System.out.println("Retrying");
+            webCloser(newDriver);
+        }
+    }
     public WebDriver chromeDriverSetup() {
         System.setProperty("webdriver.chrome.mainDriver", "C:\\Browser mainDriver\\chromedriver.exe");
         ChromeOptions options = new ChromeOptions();
         String userAgent = USER_AGENT[rand.nextInt(USER_AGENT.length)];
         options.addArguments("--user-agent=" + userAgent);
+        //options.addArguments("--headless");
         System.out.println("User Agent in use: " + userAgent);
 
         WebDriver newDriver = new ChromeDriver(options);
@@ -188,7 +228,7 @@ public class NovelBinDownloaderCleaned {
         String novelTitle = novelTitleGet(driver);
         String userHome = System.getProperty("user.home");
         String savePath = userHome + "\\Desktop\\downloaded novels\\" + novelTitle + "\\";
-        System.out.println(novelTitle);
+        //System.out.println(novelTitle);
         new File(savePath).mkdirs();
         return savePath;
     }
