@@ -15,16 +15,21 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 public class novelpiaStuff {
+    static WebDriver driver;
+
     public static void main(String[] args) throws InterruptedException {
         Scanner in = new Scanner(System.in);
+        Random rand = new Random();
         String userHome = System.getProperty("user.home");
         System.setProperty("webdriver.chrome.driver", "C:\\Browser driver\\chromedriver.exe");
         ChromeOptions options = new ChromeOptions();
         options.addArguments("user-data-dir=" + userHome + "\\AppData\\Local\\Google\\Chrome\\SeleniumProfile");
         options.addArguments("profile-directory=Default");
+        //options.addArguments("--headless");
         options.addArguments("start-maximized"); // open Browser in maximized mode
       //  options.addArguments("disable-infobars"); // disabling infobars
       //  options.addArguments("--disable-extensions"); // disabling extensions
@@ -33,32 +38,190 @@ public class novelpiaStuff {
        // options.addArguments("--no-sandbox"); // Bypass OS security model
        // options.addArguments("--remote-debugging-port=9222");
 
-        WebDriver driver = new ChromeDriver(options);
+        driver = new ChromeDriver(options);
+        /*//driver quit when program terminated
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            driver.quit();
+        }));*/
 
-
-        //login
-        driver.get("https://global.novelpia.com/");
-       /* driver.findElement(By.className("signin-btn")).click();
-        WebElement email = driver.findElement(By.id("email"));
-        email.sendKeys(userHome);
-        WebElement password = driver.findElement(By.id("password"));
-        password.sendKeys(userHome);
-        WebElement loginBtn = driver.findElement(By.id("login_btn"));
-        loginBtn.click();*/
-/*
         //change the novel name for different novels
-        String savePath = userHome + "\\Desktop\\downloaded novels\\novelpia\\My EX Has Been Taken\\";
+        String novelTitle = "I Regressed and The Genre Changed"; //swap
+        String savePath = userHome + "\\Desktop\\downloaded novels\\novelpia\\" + novelTitle + "\\";
         new File(savePath).mkdirs();
 
         //change link for diff novel
-        driver.get("https://global.novelpia.com/viewer/302745");
+        driver.get("https://global.novelpia.com/viewer/298831");//cswap
         driver.manage().window().maximize();
         Thread.sleep(5000);
 
         //insert how many chapters
-        for (int i = 0 ; i < 5 ; i++) {
-            //Thread.sleep(10000);
-            long endTime = System.currentTimeMillis() + 15000; // max 15s to handle all popups
+        int chapCnt = 1; //+1 if have chap 0 , cswap
+        int maxChap = 114; //please change depending on the novel, swap
+        String prevTitle = "";
+        int errorCnt = 0;
+
+        //loop trhrough each iteration of the page until it can move onto next
+        while (true) {
+            //click the page to reveal the other stuff
+            Thread.sleep(rand.nextInt(2000) + 2000);
+            WebElement body = driver.findElement(By.tagName("body"));
+            body.click();
+
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            String textTitle;
+            //find title and get it
+            while (true) {
+                try {
+                    WebElement titleElement = wait.until(
+                            ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.viewer-ep-tit"))
+                    );
+                    textTitle = titleElement.getText();
+                    System.out.println(textTitle); // Output: "Ch.0) Prologue"
+                    break;
+                } catch (Exception e) {
+                    errorCnt++;
+                    System.out.println("Errors: " + errorCnt);
+                    System.out.println("Retrying title.");
+                    driver.navigate().refresh();
+                    Thread.sleep(2000);
+                    WebElement body2 = driver.findElement(By.tagName("body"));
+                    body2.click();
+                }
+            }
+
+            //find paragraphs
+            //wait.until(
+            //        ExpectedConditions.visibilityOfElementLocated(By.tagName("p"))
+            //);
+            Thread.sleep(2000);
+            List<WebElement> paragraphs = driver.findElements(By.tagName("p"));
+            List<String> paragraphTextsHTML = new ArrayList<>();
+            List<String> paragraphTexts = new ArrayList<>();
+            String filename = savePath + textTitle.replaceAll("[\\\\/:*?\"<>|]", "");
+            String fileNameHTML = filename + ".html";
+            String fileNameTxt = filename + ".txt";
+
+            //HTML txt file save
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileNameHTML))) {
+                // Extract all text immediately to avoid stale references
+                writer.write(textTitle);
+                writer.newLine();
+                writer.newLine();
+                for (WebElement p : paragraphs) {
+                    try {
+                        String text = p.getAttribute("outerHTML");
+                        if (!text.isEmpty()) {
+                            paragraphTextsHTML.add(text);
+                                writer.write(text);
+                                writer.newLine();
+                                writer.write("<br>");
+                                writer.newLine();
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Skipped a stale paragraph element during extraction");
+                    }
+                }
+
+                // Now write all the extracted text
+                /*for (String text : paragraphTextsHTML) {
+                    writer.write(text);
+                    writer.newLine();
+                    writer.write("<br>");
+                    writer.newLine();
+                }*/
+                System.out.println("✅ " + textTitle + " (HTML) saved.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            //just txt
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileNameTxt))) {
+                writer.write(textTitle);
+                writer.newLine();
+                writer.newLine();
+                // Extract all text immediately to avoid stale references
+                for (WebElement p : paragraphs) {
+                    try {
+                        String text = p.getText();
+                        if (!text.isEmpty()) {
+                            paragraphTexts.add(text);
+                            writer.write(text);
+                            writer.newLine();
+                            writer.newLine();
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Skipped a stale paragraph element during extraction");
+                    }
+                }
+
+                // Now write all the extracted text
+                /*for (String text : paragraphTexts) {
+                    writer.write(text);
+                    writer.newLine();
+                    writer.newLine();
+                }*/
+                System.out.println("✅ " + textTitle + " saved.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Thread.sleep(rand.nextInt(1000) + 2000);
+
+            File file = new File(fileNameTxt);
+            long fileSize = file.length();
+
+            //repeat cycle unless new chap content successfully saved
+            if (prevTitle.equalsIgnoreCase(textTitle) || fileSize < 2048) {
+                driver.navigate().refresh();
+                continue;}
+
+            prevTitle = textTitle;
+            chapCnt++;
+            while (true) {
+                try {
+                    WebElement nextButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".viewer-btn.next")));
+                    nextButton.click();
+                    Thread.sleep(2000);
+                    System.out.println("Next button clicked.");
+                    break;
+                } catch (Exception e) {
+                    errorCnt++;
+                    System.out.println("Errors: " + errorCnt);
+                    System.out.println("Retrying next button.");
+                    driver.navigate().refresh();
+                    Thread.sleep(2000);
+                    WebElement body3 = driver.findElement(By.tagName("body"));
+                    body3.click();
+                }
+            }
+            if (errorCnt == 20) {System.exit(0);}
+            if (chapCnt == maxChap + 1) { //+1 because itll increment to match last chapter and then stop the loop and not dwnld the last chap
+                System.out.println(chapCnt);
+                break;}
+        }
+    }
+
+
+
+
+
+
+
+
+    public void login(String email, String password ) {
+        //login
+        //driver.get("https://global.novelpia.com/");
+        driver.findElement(By.className("signin-btn")).click();
+        WebElement emailField = driver.findElement(By.id("email"));
+        emailField.sendKeys(email);
+        WebElement passwordField = driver.findElement(By.id("password"));
+        passwordField.sendKeys(password);
+        WebElement loginBtn = driver.findElement(By.id("login_btn"));
+        loginBtn.click();
+    }
+
+    public void closePopups() {
+        //Thread.sleep(10000);
+        long endTime = System.currentTimeMillis() + 15000; // max 15s to handle all popups
 
             while (System.currentTimeMillis() < endTime) {
                 try {
@@ -89,61 +252,5 @@ public class novelpiaStuff {
             }
 
             System.out.println("Done closing popups (or timeout reached).");
-
-            //click the page to reveal the other stuff
-            WebElement body = driver.findElement(By.tagName("body"));
-            body.click();
-
-            //find title and get it
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            WebElement titleElement = wait.until(
-                    ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.viewer-ep-tit"))
-            );
-            String textTitle = titleElement.getText();
-            System.out.println(textTitle); // Output: "Ch.0) Prologue"
-
-            //find paragraphs
-            wait.until(
-                    ExpectedConditions.visibilityOfElementLocated(By.tagName("p"))
-            );
-            List<WebElement> paragraphs = driver.findElements(By.tagName("p"));
-            List<String> paragraphTexts = new ArrayList<>();
-
-            String fileName = savePath + textTitle + " (HTML).txt";
-            File file = new File(fileName);
-
-            // Save to file
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                // Extract all text immediately to avoid stale references
-                for (WebElement p : paragraphs) {
-                    try {
-                        String text = p.getAttribute("outerHTML");
-                        if (!text.isEmpty()) {
-                            paragraphTexts.add(text);
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Skipped a stale paragraph element during extraction");
-                    }
-                }
-
-                // Now write all the extracted text
-                for (String text : paragraphTexts) {
-                    writer.write(text);
-                    writer.newLine();
-                    writer.write("<br>");
-                    writer.newLine();
-                }
-                System.out.println("✅ " + textTitle + " saved.");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Thread.sleep(2000);
-            WebElement nextButton = wait.until(
-                    ExpectedConditions.elementToBeClickable(By.cssSelector(".viewer-btn.next"))
-            );
-            nextButton.click();
-            Thread.sleep(5000);
-            System.out.println("Next button clicked.");
-        }*/
     }
 }
