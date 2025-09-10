@@ -20,6 +20,7 @@ import java.util.Scanner;
 
 public class novelpiaStuff {
     static WebDriver driver;
+    static int smallChap = 0;
 
     public static void main(String[] args) throws InterruptedException {
         Scanner in = new Scanner(System.in);
@@ -45,25 +46,23 @@ public class novelpiaStuff {
         }));*/
 
         //change the novel name for different novels
-        String novelTitle = "I Regressed and The Genre Changed"; //swap
+        String novelTitle = "Becoming the Financial Director of an Academy on a Brink of Bankruptcy"; //swap
         String savePath = userHome + "\\Desktop\\downloaded novels\\novelpia\\" + novelTitle + "\\";
         new File(savePath).mkdirs();
 
         //change link for diff novel
-        driver.get("https://global.novelpia.com/viewer/298831");//cswap
+        driver.get("https://global.novelpia.com/viewer/253623");//cswap
         driver.manage().window().maximize();
-        Thread.sleep(5000);
+        Thread.sleep(rand.nextInt(2000) + 3000);
 
         //insert how many chapters
-        int chapCnt = 1; //+1 if have chap 0 , cswap
-        int maxChap = 114; //please change depending on the novel, swap
         String prevTitle = "";
         int errorCnt = 0;
 
         //loop trhrough each iteration of the page until it can move onto next
         while (true) {
             //click the page to reveal the other stuff
-            Thread.sleep(rand.nextInt(2000) + 2000);
+            Thread.sleep(rand.nextInt(2000) + 1000);
             WebElement body = driver.findElement(By.tagName("body"));
             body.click();
 
@@ -83,7 +82,7 @@ public class novelpiaStuff {
                     System.out.println("Errors: " + errorCnt);
                     System.out.println("Retrying title.");
                     driver.navigate().refresh();
-                    Thread.sleep(2000);
+                    Thread.sleep(rand.nextInt(2000) + 2000);
                     WebElement body2 = driver.findElement(By.tagName("body"));
                     body2.click();
                 }
@@ -93,7 +92,7 @@ public class novelpiaStuff {
             //wait.until(
             //        ExpectedConditions.visibilityOfElementLocated(By.tagName("p"))
             //);
-            Thread.sleep(2000);
+            Thread.sleep(rand.nextInt(2000) + 3000);
             List<WebElement> paragraphs = driver.findElements(By.tagName("p"));
             List<String> paragraphTextsHTML = new ArrayList<>();
             List<String> paragraphTexts = new ArrayList<>();
@@ -164,39 +163,54 @@ public class novelpiaStuff {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            Thread.sleep(rand.nextInt(1000) + 2000);
+            Thread.sleep(rand.nextInt(1000) + 1000);
 
             File file = new File(fileNameTxt);
             long fileSize = file.length();
 
             //repeat cycle unless new chap content successfully saved
             if (prevTitle.equalsIgnoreCase(textTitle) || fileSize < 2048) {
-                driver.navigate().refresh();
-                continue;}
+                if (smallChap < 4) {
+                    smallChap++;
+                    System.out.println("Small chapter, retrying");
+                    driver.navigate().refresh();
+                    continue;
+                }
+            }
 
             prevTitle = textTitle;
-            chapCnt++;
+
+            //check if its the last chapter, if yes exit program
+            try {
+                WebElement lastChap = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("next-epi-btn")));
+                String lastChapText = lastChap.getText();
+                if (lastChapText.equals("This is the last chapter")) {
+                    System.out.println("Last chapter exit triggered");
+                    System.exit(0);
+                }
+            } catch (Exception e) {
+                System.out.println();
+            }
+
             while (true) {
                 try {
                     WebElement nextButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".viewer-btn.next")));
                     nextButton.click();
-                    Thread.sleep(2000);
+                    Thread.sleep(rand.nextInt(2000) + 3000);
                     System.out.println("Next button clicked.");
+                    smallChap = 0; //reset the check for small chapters when it goes to next chapter
                     break;
                 } catch (Exception e) {
                     errorCnt++;
                     System.out.println("Errors: " + errorCnt);
                     System.out.println("Retrying next button.");
                     driver.navigate().refresh();
-                    Thread.sleep(2000);
+                    Thread.sleep(rand.nextInt(2000) + 3000);
                     WebElement body3 = driver.findElement(By.tagName("body"));
                     body3.click();
                 }
             }
             if (errorCnt == 20) {System.exit(0);}
-            if (chapCnt == maxChap + 1) { //+1 because itll increment to match last chapter and then stop the loop and not dwnld the last chap
-                System.out.println(chapCnt);
-                break;}
         }
     }
 
